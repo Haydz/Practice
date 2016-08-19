@@ -6,4 +6,4 @@ def get_nmap(options, ip):
     results = str(process.read())
     return results
 
-print get_nmap('-F', '54.186.250.79')
+print get_nmap('-F', '54.186.250.7')
