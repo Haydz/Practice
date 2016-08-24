@@ -26,6 +26,23 @@ import sys
 
 #maybe change string into list?
 
+def DoublingDigit(intdigit):
+    intdigit = intdigit * 2
+    if intdigit >= 10:
+        teststring = str(intdigit)
+        # print "test"
+        # print intdigit *2
+        # print teststring
+        Adddigit = 0
+        for x in teststring:
+            Adddigit += int(x)
+        print " added digits =", Adddigit
+        return Adddigit
+    else:
+        print " Doubled Digit digits =", intdigit
+        return intdigit
+
+
 print " enter a  6 digit between 0-9"
 digit = raw_input(">")
 digit = str(digit)
@@ -35,31 +52,44 @@ for position, number in enumerate(digit): #this enumerates the data and adds the
     intdigit = int(number)
     #even
     if position % 2 == 0: #if position is even double it
-        intdigit = intdigit *2
-        if intdigit >= 10:
-            teststring = str(intdigit)
-            # print "test"
-            # print intdigit *2
-            # print teststring
-            Adddigit = 0
-            for x in teststring:
-                Adddigit += int(x)
+        totaldigit += DoublingDigit(intdigit)
+        print "totaldigit=", totaldigit
+        raw_input("PAUSE")
 
-            print "Doubled intdigit: and added together", intdigit, "is: ", Adddigit
 
-            totaldigit += Adddigit
-            print "Adding too total digit: ", totaldigit
-        else:
-            doubledDigit = intdigit
-            totaldigit += intdigit
-            print "Double was not above 10", doubledDigit, " position ", position
+        # intdigit = intdigit *2
+        # if intdigit >= 10:
+        #     teststring = str(intdigit)
+        #     # print "test"
+        #     # print intdigit *2
+        #     # print teststring
+        #     Adddigit = 0
+        #     for x in teststring:
+        #         Adddigit += int(x)
+        #
+        #     print "Doubled intdigit: and added together", intdigit, "is: ", Adddigit
+        #
+        #     totaldigit += Adddigit
+        #     print "Adding too total digit: ", totaldigit
+        # else:
+        #     doubledDigit = intdigit
+        #     totaldigit += intdigit
+        #     print "Double was not above 10", doubledDigit, " position ", position
     else:
-        print" Number was odd position so not doubled: ", position
+        print" Number was odd position so not doubled, position: ", position
         print "Number was: ", number
         totaldigit += intdigit
         print "totaldigit = ", totaldigit
 
-print "FINAL VALIDATION EQUALS ", totaldigit
+print "FINAL SUM EQUALS ", totaldigit
+
+if totaldigit % 10 == 0:
+    print "CHECKSUM is valid! Checksum is divisiable by 10"
+
+else:
+    print "CHECKSUM IS INVALID"
+
+
 
 
 
