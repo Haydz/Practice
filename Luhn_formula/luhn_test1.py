@@ -15,7 +15,7 @@
 
 
 #double digits -  if greater than 10 the the individual digits get added together.
-123
+
 ###This section adds a doubled digit above 10 together
 
 import sys
@@ -29,13 +29,15 @@ import sys
 print " enter a  6 digit between 0-9"
 digit = raw_input(">")
 digit = str(digit)
-for position, number in enumerate(digit):
+totaldigit = 0
+for position, number in enumerate(digit): #this enumerates the data and adds the file
     print "position: ", position , " Number: ", number
     intdigit = int(number)
     #even
     if position % 2 == 0: #if position is even double it
-        if (intdigit * 2) >= 10:
-            teststring = str(intdigit * 2)
+        intdigit = intdigit *2
+        if intdigit >= 10:
+            teststring = str(intdigit)
             # print "test"
             # print intdigit *2
             # print teststring
@@ -43,13 +45,22 @@ for position, number in enumerate(digit):
             for x in teststring:
                 Adddigit += int(x)
 
-            print "Doubled intdigit:", intdigit, "is: ", Adddigit
+            print "Doubled intdigit: and added together", intdigit, "is: ", Adddigit
+
+            totaldigit += Adddigit
+            print "Adding too total digit: ", totaldigit
         else:
-            doubledDigit = intdigit * 2
+            doubledDigit = intdigit
+            totaldigit += intdigit
             print "Double was not above 10", doubledDigit, " position ", position
     else:
         print" Number was odd position so not doubled: ", position
         print "Number was: ", number
+        totaldigit += intdigit
+        print "totaldigit = ", totaldigit
+
+print "FINAL VALIDATION EQUALS ", totaldigit
+
 
 
 
