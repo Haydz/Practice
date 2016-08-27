@@ -15,11 +15,16 @@ cout << "Enter a Number 1-26> "Thanks ;
 int number;
 cin >> number;
 char outputCharacter;
-outputCharacter = number + 'A'; /* this is adding the char A (65 decimal) to the integer) */
+outputCharacter = number + 'A' -1; /* this is adding the char A (65 decimal) to the integer) */
 cout << "Equivalent Symbol: " << outputCharacter   << "\n";
 
 /* the idea is that the integer is added together with the decimal version of the char, but then
 the sum is represented as a characer
-This works because the digit 0 will be the letter A in this puzzle "
+This works because the digit 1 will be the letter A in this puzzle "
 
+1 - A
+2- B
+3 - C etc
+
+*/
 }
