@@ -11,7 +11,7 @@ using std::cout;
 
 int main(){
 
-cout << "Enter a Number 1-26> ";
+cout << "Enter a Number 1-26> "Thanks ;
 int number;
 cin >> number;
 char outputCharacter;
