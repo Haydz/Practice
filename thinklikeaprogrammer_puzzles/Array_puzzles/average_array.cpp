@@ -18,3 +18,8 @@ for (int i = 0; i < ARRAY_SIZE;  i++) {
 double average = sum / ARRAY_SIZE;
 cout << average;
 }
+
+/*
+simple loops through an array until reaches the array size summing all
+items iwthin aray. then divides by the length of the array.
+*/
