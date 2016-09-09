@@ -29,4 +29,4 @@ for gdppc in root.iter('gdppc'):
     print gdppc.text
 
     # can modify XML file and stuff
-    https: // docs.python.org / 2 / library / xml.etree.elementtree.html
+    #https: // docs.python.org / 2 / library / xml.etree.elementtree.html

@@ -88,3 +88,25 @@ print c
 #does not act as p
 print type(c)
 print c['first_name']
+
+import requests
+
+r = requests.get('https://jsonplaceholder.typicode.com/posts')
+print "REQUESTS"
+
+
+print r.headers
+print r.status_code
+if r.status_code != 200:
+    print "NOT WORKING"
+    raise ApiError('GET /tasks/ {}'.format(resp.status_code))
+
+print r.encoding
+
+print r.text
+
+print r.json()
+
+
+for x in r.json():
+    print('{} {} {}'.format(x['userId'], x['id'], x['title']))
