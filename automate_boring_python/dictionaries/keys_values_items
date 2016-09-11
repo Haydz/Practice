@@ -1,0 +1,48 @@
+spam = {'color' : 'red', 'age' : 42}
+
+print "spam = {'color' : 'red', 'age' : 42}"
+print "Printing VALUES"
+for v in spam.values():
+    print(v)
+
+print "keys"
+for k in spam.keys():
+    print k
+
+print"printing items"
+for i in spam.items():
+    print(i)
+
+
+"""True list like function"""
+
+print "True list"
+print spam.keys()
+print list(spam.keys())
+
+"""
+list(spam.keys()
+takes the dict_keys and passes it to list.
+Can then use this assignment trick in a for loop to assign key and variables in
+sepereate variables
+
+
+"""
+
+for k,v in spam.items():
+    print ('Key: ' + k + ' Value: ' + str(v))
+
+"""
+CAN CHECK whether a key or value exists
+"""
+spam2 = {'name': 'Zophie', 'age':7}
+
+
+print' is name in spam2'
+print 'name' in spam2.keys()
+
+print "is color in spam2"
+print 'color' in spam2.keys()
+#can also just use the dictionary
+print "color" in spam2
+print 'name' in spam2 : 2
