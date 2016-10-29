@@ -129,8 +129,57 @@ def SMB_SCAN(address, port):
     # need to add DNS etc
 
 
+def hostsup_scans(list):
+    print"####### Starting -sn scan for hosts up \n"
+    #tcpNameScan = 'nmap_%s_' % address\
+    print "File name is: %s" %(list)
+    TCPSCAN = 'nmap -vv -sN -iL %s -oA hostsup1_sn' % (list)
+    tcp_results = subprocess.check_output(TCPSCAN, shell=True)
+    print "####### Starting -F scan for hosts up \n"
+    TCPSCAN2 = 'nmap -vv -F -iL %s -oA hostsup2_fast' % (list)
+    tcp_results2 = subprocess.check_output(TCPSCAN2, shell=True)
+    print "####### Starting common ports scan for hosts up \n"
+    TCPSCAN3 = 'nmap -iL %s -sn -T4 -PE -PM -PP -PU53,69,123,161,500,514,520,1434 -PA21,22,23,25,53,80,389,443,513,636,8080,8443,3389,1433,3306,10000 -PS21,22,23,25,53,80,443,513,8080,8443,389,636,3389,3306,1433,10000 -n -r -vv -oA hostsup3_ports' % (list)
+    tcp_results3 = subprocess.check_output(TCPSCAN3, shell=True)
 
-#
+
+    #for line in lines:
+    #    if ("against" in line) and not ("no-response" in line):
+    #        print line
+    print "Finished Hostup scans"
+    grepHostsUp = 'cat hostsup*.gnmap | grep Up | cut -d " " -f2 | sort -u'
+    grepHostsUpResults = subprocess.check_output(grepHostsUp, shell=True)
+    lines = grepHostsUpResults.split("\n")
+    #removing any list items that are blank
+    lines = [x for x in lines if x]
+
+
+    #writing all hosts up to a file
+    allHostsUp = open('allhostsup.txt', 'a')
+    for line in lines:
+        line = line.strip()
+        allHostsUp.write("%s\n" %line)
+    allHostsUp.close()
+ #reading hosts up
+    # hostsup = open('allhostsup.txt', 'r')
+
+
+
+    total = 0
+    IPListClean = []
+    for IP in lines:
+        print "IP:", IP
+        IPListClean.append(IPList[total].strip('\n'))
+        total = total + 1
+    for IP in IPListClean:
+        p = Process(target=quicknmapScan, args=(IP,))
+        p.start()
+
+
+
+
+
+
 # generic nmap scan top 1000 ports
 def quicknmapScan(address):
     # print address
@@ -147,12 +196,10 @@ def quicknmapScan(address):
 
     lines = tcp_results.split("\n")
 
-    ports = []
+
 
     for line in lines:
-
-        # print line
-        # print "testing OPEN"
+        ports = []
         line = line.strip()
         if ("tcp" in line) and ("open" in line) and not ("Discovered" in line):
             # print line
@@ -162,31 +209,37 @@ def quicknmapScan(address):
 
             service = linesplit[2] #grabs service
             #print "service is"
-            #print service
+            print service
 
             port = line.split(" ")[0]
             #print "port is"
             port = line.split("/")[0] #remove protocol from port: 80/tcp
             #print port
+            if service in serv_dict:
+                ports = serv_dict[service]
             serv_dict[service] = ports
-            #print test_dict['port']
+            # print test_dict['port']
             ports.append(port)
 
+            qhp = open('quick_hosts_ports.txt', 'a')
+            qhp.write("%s:%s:%s\n" % (address, port, service))
+            qhp.close()
+
     #f.close()
-    print "All ports for %s are:" % address
+
     #print ports
-
     # write all IP addresses with ports
-    for x in ports:
+    #for x in ports:
         #print "%s:%s" %(address,x)
-        print x
-        qhp = open('quick_hosts_ports', 'a')
-        qhp.write("%s:%s\n" %(address,x))
-        qhp.close()
-    print "services"
-    for serv in serv_dict:
+        #print x
 
-        print serv_dict[serv]
+    print "services"
+
+    print serv_dict
+
+    # for serv in serv_dict:
+    #
+    #     print serv_dict[serv]
     #raw_input("PAUSE")
 
     #GOOD ENOUGH TO GO FROM HERE
@@ -278,7 +331,8 @@ if __name__ == '__main__':
 # https://hackertarget.com/7-nmap-nse-scripts-recon/
 
     #open file'
-    f = open('IP.txt', 'r')
+    textfile = 'IP.txt'
+    f = open(textfile, 'r')
     print"IPs in File::"
     #
     #WList = f.read()
@@ -294,18 +348,30 @@ if __name__ == '__main__':
     print" Total Number of IPS: %s" % total
     IPListClean = []
     total = 0
+
     for IP in IPList:
         IPListClean.append(IPList[total].strip('\n'))
         total = total + 1
 
+    #print IPList
+    #raw_input("PAUSE")
+
+    p2 = Process(target=hostsup_scans, args=(textfile,))
+    p2.start()
+
     # print IPListClean
     #Creates blank files ready to write into
     # Acts as a blank file, when script is restarted
-    open('quick_hosts_ports', 'w').close()
+    open('quick_hosts_ports.txt', 'w').close()
+    open('allhostsup.txt', 'w').close()
+
+
     for IP in IPListClean:
         print"IPS ", IP
-        p = Process(target=quicknmapScan, args=(IP,))
-        p.start()
+        #p = Process(target=quicknmapScan, args=(IP,))
+        #p.start()
+
+
 
         #p2 = Process(target=nmapScan, args=(IP,))
         #p2.start()
