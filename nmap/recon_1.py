@@ -129,6 +129,8 @@ def SMB_SCAN(address, port):
     # need to add DNS etc
 
 
+
+#
 # generic nmap scan top 1000 ports
 def quicknmapScan(address):
     # print address
@@ -137,40 +139,57 @@ def quicknmapScan(address):
     print"####### Starting TOP 1000 PORTS TCP scan for ", address
     tcpNameScan = 'nmap_%s_quick' % address
     #top one thousand ports
-    TCPSCAN = 'nmap -vv  %s -oA %s_quick' % (address, tcpNameScan)
+    TCPSCAN = 'nmap -vv --top-ports 1000  %s -oA %s_quick' % (address, tcpNameScan)
     tcp_results = subprocess.check_output(TCPSCAN, shell=True)
-    lines_results = tcp_results.split("\n")
-    #print lines_results
-    print 'Have %d bytes in output' % len(tcp_results)
-    print type(tcp_results)
 
+    fullName = "%s_quick.xml" % tcpNameScan
+    print "Gathering ports and services for %s" % address
 
-    print "Gathering ports and services"
-    f = open(tcpNameScan, 'r')
-    #linestri[p]
-    for line in f:
-        ports = []
+    lines = tcp_results.split("\n")
+
+    ports = []
+
+    for line in lines:
+
         # print line
         # print "testing OPEN"
-        if 'open' in line:
+        line = line.strip()
+        if ("tcp" in line) and ("open" in line) and not ("Discovered" in line):
             # print line
-
+            while "  " in line:
+                line = line.replace("  ", " ");
             linesplit = line.split(" ")
-            linesplit = line.split('"')
 
-            # print linesplit
-            port = linesplit[3]
-            service = linesplit[11]
+            service = linesplit[2] #grabs service
+            #print "service is"
+            #print service
 
-            serv_dict[service] = port
-
-
-            # print test_dict['port']
+            port = line.split(" ")[0]
+            #print "port is"
+            port = line.split("/")[0] #remove protocol from port: 80/tcp
+            #print port
+            serv_dict[service] = ports
+            #print test_dict['port']
             ports.append(port)
-    f.close()
-    print ports
 
+    #f.close()
+    print "All ports for %s are:" % address
+    #print ports
 
+    # write all IP addresses with ports
+    for x in ports:
+        #print "%s:%s" %(address,x)
+        print x
+        qhp = open('quick_hosts_ports', 'a')
+        qhp.write("%s:%s\n" %(address,x))
+        qhp.close()
+    print "services"
+    for serv in serv_dict:
+
+        print serv_dict[serv]
+    #raw_input("PAUSE")
+
+    #GOOD ENOUGH TO GO FROM HERE
 
 
 #NMAP ALL PORTS DETAILED SCAN
@@ -190,9 +209,10 @@ def nmapScan(address):
 
     #this opens the file and strips the ports from it
     print "Gathering ports and services"
-    f = open(tcpNameScan, 'r')
+    #f = open(tcpNameScan, 'r')
+    lines = results.split("\n")
     #linestri[p]
-    for line in f:
+    for line in lines:
         ports = []
         # print line
         # print "testing OPEN"
@@ -254,6 +274,9 @@ if __name__ == '__main__':
 # ifconfig
 # nmap 192.168.0.* --exclude 192.168.0.100
 
+#further functionality
+# https://hackertarget.com/7-nmap-nse-scripts-recon/
+
     #open file'
     f = open('IP.txt', 'r')
     print"IPs in File::"
@@ -276,7 +299,9 @@ if __name__ == '__main__':
         total = total + 1
 
     # print IPListClean
-
+    #Creates blank files ready to write into
+    # Acts as a blank file, when script is restarted
+    open('quick_hosts_ports', 'w').close()
     for IP in IPListClean:
         print"IPS ", IP
         p = Process(target=quicknmapScan, args=(IP,))
