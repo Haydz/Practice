@@ -132,9 +132,11 @@ def SMB_SCAN(address, port):
 def hostsup_scans(list):
     print"####### Starting -sn scan for hosts up \n"
     #tcpNameScan = 'nmap_%s_' % address\
-    print "File name is: %s" %(list)
+    #print "File name is: %s" %(list)
     TCPSCAN = 'nmap -vv -sN -iL %s -oA hostsup1_sn' % (list)
-    tcp_results = subprocess.check_output(TCPSCAN, shell=True)
+    tcp_results = scan(TCPSCAN)
+    print tcp_results
+    #tcp_results = subprocess.check_output(TCPSCAN, shell=True)
     print "####### Starting -F scan for hosts up \n"
     TCPSCAN2 = 'nmap -vv -F -iL %s -oA hostsup2_fast' % (list)
     tcp_results2 = subprocess.check_output(TCPSCAN2, shell=True)
@@ -160,8 +162,6 @@ def hostsup_scans(list):
         line = line.strip()
         allHostsUp.write("%s\n" %line)
     allHostsUp.close()
- #reading hosts up
-    # hostsup = open('allhostsup.txt', 'r')
 
 
 
@@ -175,23 +175,18 @@ def hostsup_scans(list):
         p = Process(target=quicknmapScan, args=(IP,))
         p.start()
 
-
-
-
-
-
 # generic nmap scan top 1000 ports
 def quicknmapScan(address):
-    # print address
+    #print address
     serv_dict = {}
     #nm = nmap.PortScanner()
-    print"####### Starting TOP 1000 PORTS TCP scan for ", address
+    print "####### Starting TOP 1000 PORTS TCP scan for ", address
     tcpNameScan = 'nmap_%s_quick' % address
     #top one thousand ports
     TCPSCAN = 'nmap -vv --top-ports 1000  %s -oA %s_quick' % (address, tcpNameScan)
     tcp_results = subprocess.check_output(TCPSCAN, shell=True)
 
-    fullName = "%s_quick.xml" % tcpNameScan
+    #fullName = "%s_quick.xml" % tcpNameScan
     print "Gathering ports and services for %s" % address
 
     lines = tcp_results.split("\n")
@@ -209,7 +204,7 @@ def quicknmapScan(address):
 
             service = linesplit[2] #grabs service
             #print "service is"
-            print service
+            #print service
 
             port = line.split(" ")[0]
             #print "port is"
@@ -225,25 +220,16 @@ def quicknmapScan(address):
             qhp.write("%s:%s:%s\n" % (address, port, service))
             qhp.close()
 
-    #f.close()
+#TO TEST
+def scan(command):
+    launchresults = subprocess.check_output(command, shell=True)
+    return launchresults
 
-    #print ports
-    # write all IP addresses with ports
-    #for x in ports:
-        #print "%s:%s" %(address,x)
-        #print x
 
-    print "services"
 
-    print serv_dict
-
-    # for serv in serv_dict:
-    #
-    #     print serv_dict[serv]
-    #raw_input("PAUSE")
-
-    #GOOD ENOUGH TO GO FROM HERE
-
+def top2000(address):
+    serv_dict = {}
+    print"####### Starting top 2000 ports scan", address
 
 #NMAP ALL PORTS DETAILED SCAN
 def nmapScan(address):
@@ -353,11 +339,18 @@ if __name__ == '__main__':
         IPListClean.append(IPList[total].strip('\n'))
         total = total + 1
 
-    #print IPList
-    #raw_input("PAUSE")
+    #p2 = Process(target=hostsup_scans, args=(textfile,))
+    #p2.start()
 
-    p2 = Process(target=hostsup_scans, args=(textfile,))
-    p2.start()
+    #p3 = Process(target=scan, args=(launchresults,))
+
+    #the below returns results from the scan function
+    test = 'nmap -F 192.168.1.*'
+    testresults = scan(test)
+    print 'launchresults: ', testresults
+
+    #p3.start()
+
 
     # print IPListClean
     #Creates blank files ready to write into
