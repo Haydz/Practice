@@ -208,7 +208,7 @@ def quicknmapScan(address):
 
             port = line.split(" ")[0]
             #print "port is"
-            port = line.split("/")[0] #remove protocol from port: 80/tcp
+            port = line.split("/")[0] #remove protocol from pEyort: 80/tcp
             #print port
             if service in serv_dict:
                 ports = serv_dict[service]
@@ -225,11 +225,67 @@ def scan(command):
     launchresults = subprocess.check_output(command, shell=True)
     return launchresults
 
+def parseScanResults(results,filename):
+    print "Creating / Empyting file: %s" % filename
+    open(filename, 'w').close()
+
+    print "Gathering ports and services for %s" % address
+
+    lines = results.split("\n")
+    for line in lines:
+        ports = []
+        line = line.strip()
+        if ("tcp" in line) and ("open" in line) and not ("Discovered" in line):
+            # print line
+            while "  " in line:
+                line = line.replace("  ", " ");
+            linesplit = line.split(" ")
+
+            service = linesplit[2] #grabs service
+            #print "service is"
+            #print service
+
+            port = line.split(" ")[0]
+            #print "port is"
+            port = line.split("/")[0] #remove protocol from pEyort: 80/tcp
+            #print port
+            if service in serv_dict:
+                ports = serv_dict[service]
+            serv_dict[service] = ports
+            # print test_dict['port']
+            ports.append(port)
+
+            print "Writing contents to %s" filename
+            qhp = open(filename, 'a')
+            qhp.write("%s:%s:%s\n" % (address, port, service))
+            qhp.close()
+
+
+
+
 
 
 def top2000(address):
     serv_dict = {}
     print"####### Starting top 2000 ports scan", address
+
+def webports(address):
+    print "Starting Common web ports scan"
+    #USING THIS TO TEST PARSING SCAN RESULTS THEN SEND TO EYEWITNESS.
+
+
+
+
+def eyewitness(addresses): #expecting IP addrees list
+    print "Starting Eye Witness scan"
+
+
+    if os_version == 'Ubuntu':
+        eyewitnessPath = '/intelligence-gathering/eyewitness/'
+
+
+
+
 
 #NMAP ALL PORTS DETAILED SCAN
 def nmapScan(address):
@@ -345,9 +401,21 @@ if __name__ == '__main__':
     #p3 = Process(target=scan, args=(launchresults,))
 
     #the below returns results from the scan function
-    test = 'nmap -F 192.168.1.*'
-    testresults = scan(test)
-    print 'launchresults: ', testresults
+    #test = 'nmap -F 192.168.1.*'
+    #testresults = scan(test)
+    #print 'launchresults: ', testresults
+    # get OS Versionur
+    os_ver_scan = scan('uname -a')
+    os_version = ""
+    #print os_ver
+
+    if "Ubuntu" in os_ver_scan:
+        print "Ubuntu Operating System Identified"
+        print "Using PTF file structure (/pentest/)"
+    #raw_input("TEST")
+    else:
+        print "Unknown operating being used, some tools will not work"
+
 
     #p3.start()
 
