@@ -2,9 +2,15 @@ __author__ = 'haydz'
 
 #this is a major work in progress
 
-#This code runs a normal TOP 1000 ports scan and writes it to a file. You can then start using this
-# it will then run a full TCP scan and run extra NMAP scripts based on the ports found
-# working on adding dirbuster, smb enumeration and others that are not nmap related
+"""
+This project is focused on intelligence automation from Nmap scans.
+IT currently does the following:
+
+1) Fast Nmap Scan to find hosts up
+2) TOP 1000 PORTS TCP scan
+3) Scan for common web ports
+4) Run Eye Witness on common web ports (in progress)
+"""
 
 
 #to add multi process
@@ -20,7 +26,7 @@ import os
 #importing to allow the script to connect to input and out put pipes, such as out put from nmap scans
 import subprocess
 import time
-import nmap
+#import nmap
 
 
 #this is the function that will run the multip processing - NEED TO CONFIRM IF THIS IS USED -- need to add this
@@ -129,20 +135,20 @@ def SMB_SCAN(address, port):
     # need to add DNS etc
 
 
-def hostsup_scans(list):
+def hostsup_scans(list): # maybe change to starter scan
     print"####### Starting -sn scan for hosts up \n"
     #tcpNameScan = 'nmap_%s_' % address\
     #print "File name is: %s" %(list)
     TCPSCAN = 'nmap -vv -sN -iL %s -oA hostsup1_sn' % (list)
-    tcp_results = scan(TCPSCAN)
-    print tcp_results
+    #tcp_results = scan(TCPSCAN)
+    #print tcp_results
     #tcp_results = subprocess.check_output(TCPSCAN, shell=True)
     print "####### Starting -F scan for hosts up \n"
     TCPSCAN2 = 'nmap -vv -F -iL %s -oA hostsup2_fast' % (list)
     tcp_results2 = subprocess.check_output(TCPSCAN2, shell=True)
     print "####### Starting common ports scan for hosts up \n"
     TCPSCAN3 = 'nmap -iL %s -sn -T4 -PE -PM -PP -PU53,69,123,161,500,514,520,1434 -PA21,22,23,25,53,80,389,443,513,636,8080,8443,3389,1433,3306,10000 -PS21,22,23,25,53,80,443,513,8080,8443,389,636,3389,3306,1433,10000 -n -r -vv -oA hostsup3_ports' % (list)
-    tcp_results3 = subprocess.check_output(TCPSCAN3, shell=True)
+    #tcp_results3 = subprocess.check_output(TCPSCAN3, shell=True)
 
 
     #for line in lines:
@@ -164,16 +170,26 @@ def hostsup_scans(list):
     allHostsUp.close()
 
 
+    print "Lauching Webports scan"
+    #launching not as multi process so we know when it finishes
+    webports('allhostsup.txt')
 
+    #lauching EyeWitness as a seperate process due to how long it takes
+    p2 = Process(target=eyewitness, args=('webPorts_common.xml', 'webPorts_common'))
+    p2.start()
+
+    print "testing if running after process ran"
     total = 0
     IPListClean = []
-    for IP in lines:
-        print "IP:", IP
-        IPListClean.append(IPList[total].strip('\n'))
-        total = total + 1
-    for IP in IPListClean:
-        p = Process(target=quicknmapScan, args=(IP,))
-        p.start()
+
+
+    # for IP in lines:
+    #     print "IP:", IP
+    #     IPListClean.append(IPList[total].strip('\n'))
+    #     total = total + 1
+    # for IP in IPListClean:
+    #     p = Process(target=quicknmapScan, args=(IP,))
+    #     p.start()
 
 # generic nmap scan top 1000 ports
 def quicknmapScan(address):
@@ -268,27 +284,34 @@ def top2000(address):
     serv_dict = {}
     print"####### Starting top 2000 ports scan", address
 
-def webports(address):
+def webports(filename):
     print "Starting Common web ports scan -quick Fast One"
     #USING THIS TO TEST PARSING SCAN RESULTS THEN SEND TO EYEWITNESS.
-    webScan = 'nmap -p 80,443,8080,8443,981,1311,2480 %s' % address
+    webScan = 'nmap -p 80,443,8080,8443,981,1311,2480 -iL %s -oA webPorts_common' % filename
 
-    testresults = scan(webScan)
+    webresults = scan(webScan)
+
     #print testresults
-    parseScanResults(testresults, 'webports.txt',address)
+    #parseScanResults(testresults, 'webports.txt',address)
 #NEED TO TROUBLESHOOT THIS,
 # CANNOT RUN EYE WITNESS SCAN ON WEBPORTS ONCE FINISHED
 
 
 
-def eyewitness(filename): #expecting IP addrees list
+def eyewitness(filename, outputName): #expecting IP addrees list
     print "Starting Eye Witness scan"
-
+    #this requires editing the Eyewitness.py to use /bin/phantomjs
 
     if os_version == 'Ubuntu':
-        eyewitnessPath = '/intelligence-gathering/eyewitness/'
-        command = 'EyeWitness.py  --prepend-https  --all-protocols  -x %s -d %s' %(filename, filename)
+        eyewitnessPath = '/pentest/intelligence-gathering/eyewitness/'
+        command = '%sEyeWitness.py --headless  --prepend-https --no-prompt  -x %s -d %s' %(eyewitnessPath,filename, outputName)
+        print  "Running EyeWitness with: ", command
 
+        #delete dir
+        scan('rm -rf %s' %outputName)
+        scan(command)
+        print "\n ==== EyeWitness web ports scan finished ===="
+        print "Located in the %s Directory" % outputName
 
 
 
@@ -369,14 +392,29 @@ def nmapScan(address):
 #this is the start of the script, taking the IP addresses from a text file called IP.txt
 
 if __name__ == '__main__':
+    # get OS Versionur
+    os_ver_scan = scan('uname -a')
+    os_version = ""
+    #print os_ver
+    #checking OS
+    if "Ubuntu" in os_ver_scan:
+        print "Ubuntu Operating System Identified"
+        print "Using PTF file structure (/pentest/)"
+        os_version = 'Ubuntu'
+    # raw_input("TEST")
+    else:
+        print "Unknown operating system being used, some tools will not work"
 
-#TO DO:
+
+
+    #TO DO:
 # Add excluding own IP address
 # ifconfig
 # nmap 192.168.0.* --exclude 192.168.0.100
 
 #further functionality
 # https://hackertarget.com/7-nmap-nse-scripts-recon/
+
 
     #open file'
     textfile = 'IP.txt'
@@ -401,8 +439,8 @@ if __name__ == '__main__':
         IPListClean.append(IPList[total].strip('\n'))
         total = total + 1
 
-    #p2 = Process(target=hostsup_scans, args=(textfile,))
-    #p2.start()
+    p2 = Process(target=hostsup_scans, args=(textfile,))
+    p2.start()
 
     #p3 = Process(target=scan, args=(launchresults,))
 
@@ -410,23 +448,14 @@ if __name__ == '__main__':
     #test = 'nmap -F 192.168.1.*'
     #testresults = scan(test)
     #print 'launchresults: ', testresults
-    # get OS Versionur
-    os_ver_scan = scan('uname -a')
-    os_version = ""
-    #print os_ver
 
-    if "Ubuntu" in os_ver_scan:
-        print "Ubuntu Operating System Identified"
-        print "Using PTF file structure (/pentest/)"
-    #raw_input("TEST")
-    else:
-        print "Unknown operating being used, some tools will not work"
+
 
 
     #p3.start()
 
 
-    # print IPListClean
+    #print IPListClean
     #Creates blank files ready to write into
     # Acts as a blank file, when script is restarted
     open('quick_hosts_ports.txt', 'w').close()
@@ -436,12 +465,12 @@ if __name__ == '__main__':
 
     for IP in IPListClean:
         print"IPS ", IP
-        p = Process(target=webports, args=(IP,))
+        #p = Process(target=webports, args=(IP,))
         #p = Process(target=quicknmapScan, args=(IP,))
-        p.start()
+        #p.start()
 
-    "PRint s"
-    eyewitness('webports.txt')
+
+    #eyewitness('webports.txt')
 
 
         #p2 = Process(target=nmapScan, args=(IP,))
