@@ -225,9 +225,8 @@ def scan(command):
     launchresults = subprocess.check_output(command, shell=True)
     return launchresults
 
-def parseScanResults(results,filename):
-    print "Creating / Empyting file: %s" % filename
-    open(filename, 'w').close()
+def parseScanResults(results,filename,address):
+
 
     print "Gathering ports and services for %s" % address
 
@@ -249,13 +248,13 @@ def parseScanResults(results,filename):
             #print "port is"
             port = line.split("/")[0] #remove protocol from pEyort: 80/tcp
             #print port
-            if service in serv_dict:
-                ports = serv_dict[service]
-            serv_dict[service] = ports
+            # if service in serv_dict:
+            #     ports = serv_dict[service]
+            # serv_dict[service] = ports
             # print test_dict['port']
             ports.append(port)
 
-            print "Writing contents to %s" filename
+            print "Writing contents to %s" % filename
             qhp = open(filename, 'a')
             qhp.write("%s:%s:%s\n" % (address, port, service))
             qhp.close()
@@ -270,18 +269,25 @@ def top2000(address):
     print"####### Starting top 2000 ports scan", address
 
 def webports(address):
-    print "Starting Common web ports scan"
+    print "Starting Common web ports scan -quick Fast One"
     #USING THIS TO TEST PARSING SCAN RESULTS THEN SEND TO EYEWITNESS.
+    webScan = 'nmap -p 80,443,8080,8443,981,1311,2480 %s' % address
+
+    testresults = scan(webScan)
+    #print testresults
+    parseScanResults(testresults, 'webports.txt',address)
+#NEED TO TROUBLESHOOT THIS,
+# CANNOT RUN EYE WITNESS SCAN ON WEBPORTS ONCE FINISHED
 
 
 
-
-def eyewitness(addresses): #expecting IP addrees list
+def eyewitness(filename): #expecting IP addrees list
     print "Starting Eye Witness scan"
 
 
     if os_version == 'Ubuntu':
         eyewitnessPath = '/intelligence-gathering/eyewitness/'
+        command = 'EyeWitness.py  --prepend-https  --all-protocols  -x %s -d %s' %(filename, filename)
 
 
 
@@ -425,13 +431,17 @@ if __name__ == '__main__':
     # Acts as a blank file, when script is restarted
     open('quick_hosts_ports.txt', 'w').close()
     open('allhostsup.txt', 'w').close()
+    open('webports.txt', 'w').close()
 
 
     for IP in IPListClean:
         print"IPS ", IP
+        p = Process(target=webports, args=(IP,))
         #p = Process(target=quicknmapScan, args=(IP,))
-        #p.start()
+        p.start()
 
+    "PRint s"
+    eyewitness('webports.txt')
 
 
         #p2 = Process(target=nmapScan, args=(IP,))
