@@ -14,8 +14,6 @@ IT currently does the following:
 
 
 #to add multi process
-
-
 from multiprocessing import Process
 
 #importing multi processing to support running multiple nmap comamnds (similar to multiple threads)
@@ -29,6 +27,7 @@ import time
 #import nmap
 
 
+###### FUNCTIONS BELOW #####
 #this is the function that will run the multip processing - NEED TO CONFIRM IF THIS IS USED -- need to add this
 def multProc(targetin, scanip, port):
     jobs = []
@@ -36,9 +35,6 @@ def multProc(targetin, scanip, port):
     jobs.append(p)
     p.start()
     return
-
-
-
 
 
 def hostsup_scans(list): # maybe change to starter scan
@@ -56,17 +52,17 @@ def hostsup_scans(list): # maybe change to starter scan
     TCPSCAN3 = 'nmap -iL %s -sn -T4 -PE -PM -PP -PU53,69,123,161,500,514,520,1434 -PA21,22,23,25,53,80,389,443,513,636,8080,8443,3389,1433,3306,10000 -PS21,22,23,25,53,80,443,513,8080,8443,389,636,3389,3306,1433,10000 -n -r -vv -oA hostsup3_ports' % (list)
     #tcp_results3 = subprocess.check_output(TCPSCAN3, shell=True)
 
-
     #for line in lines:
     #    if ("against" in line) and not ("no-response" in line):
     #        print line
     print "Finished Hostup scans"
+    
+    #Parsing all hostup scans for Hosts that are UP
     grepHostsUp = 'cat hostsup*.gnmap | grep Up | cut -d " " -f2 | sort -u'
     grepHostsUpResults = subprocess.check_output(grepHostsUp, shell=True)
     lines = grepHostsUpResults.split("\n")
     #removing any list items that are blank
     lines = [x for x in lines if x]
-
 
     #writing all hosts up to a file
     allHostsUp = open('allhostsup.txt', 'a')
@@ -74,7 +70,6 @@ def hostsup_scans(list): # maybe change to starter scan
         line = line.strip()
         allHostsUp.write("%s\n" %line)
     allHostsUp.close()
-
 
     print "Lauching Webports scan"
     #launching not as multi process so we know when it finishes
@@ -87,7 +82,6 @@ def hostsup_scans(list): # maybe change to starter scan
     print "testing if running after process ran"
     total = 0
     IPListClean = []
-
 
     # for IP in lines:
     #     print "IP:", IP
@@ -148,10 +142,10 @@ def scan(command):
     return launchresults
 
 def parseScanResults(results,filename,address):
-
-
+    #parser to find ports open during nmap scan
+    #results passed from def scan(command) : launchresults
     print "Gathering ports and services for %s" % address
-
+    #split end of lines in results and parse for tcp, open, and no discovered in line
     lines = results.split("\n")
     for line in lines:
         ports = []
