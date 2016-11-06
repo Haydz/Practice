@@ -12,6 +12,14 @@ IT currently does the following:
 4) Run Eye Witness on common web ports (in progress)
 """
 
+"""
+Yet to do:
+5) Enum4linux
+6) connect all various NSE scripts up
+7) ftp scan - log in for anonymous, output success anonmyous logins
+8 ) snmp scans - private, community strings
+"""
+
 
 #to add multi process
 from multiprocessing import Process
@@ -197,6 +205,13 @@ def webports(filename):
     #parseScanResults(testresults, 'webports.txt',address)
 #NEED TO TROUBLESHOOT THIS,
 # CANNOT RUN EYE WITNESS SCAN ON WEBPORTS ONCE FINISHED
+
+def ftpPort(filename):
+    print "Starting FTP scan, checks anonymous"
+    #USING THIS TO TEST PARSING SCAN RESULTS THEN SEND TO EYEWITNESS.
+    ftpScan = 'nmap -sV -Pn -vv -p %s %s --script=banner,ftp-anon --oA ftpPorts' -oA webPorts_common' % filename
+
+    ftwresults = scan(ftpScan)
 
 
 
