@@ -1,6 +1,8 @@
 __author__ = 'haydz'
 
 #this is a major work in progress
+#IDEA: Using TCP dump to monitor for Arp Packets, collate IP address from ARP packets, then direct scan hosts.
+
 
 """
 This project is focused on intelligence automation from Nmap scans.
@@ -144,7 +146,7 @@ def quicknmapScan(address):
             qhp.write("%s:%s:%s\n" % (address, port, service))
             qhp.close()
 
-#TO TEST
+
 def scan(command):
     launchresults = subprocess.check_output(command, shell=True)
     return launchresults
@@ -203,16 +205,32 @@ def webports(filename):
 
     #print testresults
     #parseScanResults(testresults, 'webports.txt',address)
-#NEED TO TROUBLESHOOT THIS,
-# CANNOT RUN EYE WITNESS SCAN ON WEBPORTS ONCE FINISHED
 
 def ftpPort(filename):
     print "Starting FTP scan, checks anonymous"
-    #USING THIS TO TEST PARSING SCAN RESULTS THEN SEND TO EYEWITNESS.
-    ftpScan = 'nmap -sV -Pn -vv -p %s %s --script=banner,ftp-anon --oA ftpPorts' -oA webPorts_common' % filename
+    
+    ftpScan = 'nmap -sV -Pn -vv -p 21 -iL %s --script=banner,ftp-anon --oA ftpPorts'  % filename
 
-    ftwresults = scan(ftpScan)
+    ftpResults = scan(ftpScan)
+    #need to add parsing the file for anonymous access.
+    
+def smbScan(filename):
+    print "Starting SMB scan to run enum4Linux and smb checks"
+    
+    smbScan = 'nmap -sV -Pn -vv -p 139,445 -iL %s --script=smb-enum-shares, smb-enum-users, smb-os-discovery,smb-brute --oA enum4linux' % filename
 
+    enum4LinuxResults = scan(smbScan)
+    #need to add parsing the file for smb results, then add function for ENUM4Linux.
+    
+def Enum4Linux(filename, outputName):
+    # cannot remember if it has an out file.
+    #does Enum4linux take a single Ip address or run over multiple?
+    
+    if os_version == 'Ubuntu':
+        Enum4LinuxPath = '/pentest/intelligence-gathering/enum4linux/'
+        #command = '%senum4linux.py ' %(Enum4LinuxPath, filename, outputName)
+        print  "Running Enum4Linux on with: ", #command
+    
 
 
 def eyewitness(filename, outputName): #expecting IP addrees list
@@ -230,19 +248,10 @@ def eyewitness(filename, outputName): #expecting IP addrees list
         print "\n ==== EyeWitness web ports scan finished ===="
         print "Located in the %s Directory" % outputName
 
-
-
-
-#NMAP ALL PORTS DETAILED SCAN
-
-
-#
-
-
 #this is the start of the script, taking the IP addresses from a text file called IP.txt
 
 if __name__ == '__main__':
-    # get OS Versionur
+    # get OS Version
     os_ver_scan = scan('uname -a')
     os_version = ""
     #print os_ver
@@ -305,8 +314,8 @@ if __name__ == '__main__':
     #p3.start()
 
 
-    #print IPListClean
-    #Creates blank files ready to write into
+    
+    """Creates blank files ready to write into"""
     # Acts as a blank file, when script is restarted
     open('quick_hosts_ports.txt', 'w').close()
     open('allhostsup.txt', 'w').close()
