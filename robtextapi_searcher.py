@@ -18,7 +18,7 @@ url = "https://freeapi.robtex.com/ipquery/"
 
 # Collect and parse firs
 
-with open('C:\\Users\haydn.johnson\PycharmProjects\PointsClass\ipstest.csv') as csv_file:
+with open('file location') as csv_file:
     csv_data = list(csv.DictReader(csv_file))
     #print(csv_data[0])
     for x in csv_data:
